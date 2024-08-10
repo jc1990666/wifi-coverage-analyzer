@@ -1,35 +1,64 @@
-import streamlit as st
-import pandas as pd
+import matplotlib.pyplot as plt
+import numpy as np
+from shapely.geometry import Polygon
+from matplotlib.patches import Polygon as mpl_polygon
+from tkinter import Tk, filedialog, Button
 
-# Função para calcular a cobertura com base na metragem
-def calcular_cobertura(metragens, dados_telecom):
-    cobertura = {}
-    for cidade, dados in dados_telecom.items():
-        if cidade in metragens:
-            probabilidade = min(100, (metragens[cidade] / dados['max_metragem']) * 100)
-            cobertura[cidade] = probabilidade
-        else:
-            cobertura[cidade] = 0  # Se não houver metragem para a cidade
-    return cobertura
+# Função para importar e desenhar a planta baixa
+def importar_planta_baixa(arquivo):
+    # Aqui você deve adicionar código para ler o arquivo da planta baixa
+    # Para este exemplo, vamos criar uma planta baixa de exemplo
+    return Polygon([(0, 0), (10, 0), (10, 10), (0, 10)])
 
-# Dados de exemplo
-metragens = {
-    'Cidade1': 1500,
-    'Cidade2': 2500,
-    'Cidade3': 1000
-}
+def desenhar_planta_baixa(planta_baixa):
+    fig, ax = plt.subplots()
+    x, y = planta_baixa.exterior.xy
+    ax.plot(x, y, label="Planta Baixa")
+    plt.fill(x, y, alpha=0.5)
+    plt.legend()
+    plt.title('Planta Baixa do Edifício')
+    plt.show()
 
-dados_telecom = {
-    'Cidade1': {'max_metragem': 2000},
-    'Cidade2': {'max_metragem': 3000},
-    'Cidade3': {'max_metragem': 1500}
-}
+# Função para adicionar obstruções
+def adicionar_obstrucoes(planta_baixa, obstrucoes):
+    for obstrucao in obstrucoes:
+        planta_baixa = planta_baixa.difference(obstrucao)
+    return planta_baixa
 
-# Calculando a cobertura
-cobertura = calcular_cobertura(metragens, dados_telecom)
+# Simular cobertura Wi-Fi
+def simular_cobertura(planta_baixa, parametros):
+    # Este é um exemplo simplificado; uma simulação real deve considerar vários fatores
+    x, y = np.linspace(0, 10, 100), np.linspace(0, 10, 100)
+    X, Y = np.meshgrid(x, y)
+    Z = np.exp(-((X-5)**2 + (Y-5)**2) / parametros['sigma'])
+    return X, Y, Z
 
-# Exibindo os resultados com Streamlit
-st.title('Analisador de Cobertura de Wi-Fi')
+# Visualizar a cobertura de sinal Wi-Fi
+def visualizar_cobertura(X, Y, Z):
+    plt.contourf(X, Y, Z, levels=10, cmap='viridis')
+    plt.colorbar(label='Intensidade do Sinal')
+    plt.title('Cobertura de Sinal Wi-Fi')
+    plt.show()
 
-for cidade, probabilidade in cobertura.items():
-    st.write(f'Cobertura de internet em {cidade}: {probabilidade:.2f}%')
+# Função para carregar a planta baixa
+def carregar_planta():
+    arquivo = filedialog.askopenfilename(filetypes=[("Arquivos de Planta Baixa", "*.pdf;*.dwg;*.dxf")])
+    planta_baixa = importar_planta_baixa(arquivo)
+    desenhar_planta_baixa(planta_baixa)
+    
+    parametros = {'sigma': 1.0}  # Parâmetro de exemplo para a simulação
+    X, Y, Z = simular_cobertura(planta_baixa, parametros)
+    visualizar_cobertura(X, Y, Z)
+
+# Interface gráfica para o aplicativo
+def criar_interface():
+    root = Tk()
+    root.title('Simulador de Cobertura Wi-Fi')
+
+    botao_carregar = Button(root, text="Carregar Planta Baixa", command=carregar_planta)
+    botao_carregar.pack(pady=20)
+
+    root.mainloop()
+
+if __name__ == "__main__":
+    criar_interface()
