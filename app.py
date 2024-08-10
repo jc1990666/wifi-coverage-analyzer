@@ -1,3 +1,4 @@
+import streamlit as st
 import pandas as pd
 
 # Função para calcular a cobertura com base na metragem
@@ -27,6 +28,8 @@ dados_telecom = {
 # Calculando a cobertura
 cobertura = calcular_cobertura(metragens, dados_telecom)
 
-# Exibindo os resultados
+# Exibindo os resultados com Streamlit
+st.title('Analisador de Cobertura de Wi-Fi')
+
 for cidade, probabilidade in cobertura.items():
-    print(f'Cobertura de internet em {cidade}: {probabilidade:.2f}%')
+    st.write(f'Cobertura de internet em {cidade}: {probabilidade:.2f}%')
