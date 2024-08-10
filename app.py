@@ -1,45 +1,32 @@
-import streamlit as st
+import pandas as pd
 
-# Fatores de ajuste
-fatores_parede = {
-    "drywall": 1.1,
-    "concreto": 0.7,
-    "tijolo": 0.85,
-    "vidro": 1.05
+# Função para calcular a cobertura com base na metragem
+def calcular_cobertura(metragens, dados_telecom):
+    cobertura = {}
+    for cidade, dados in dados_telecom.items():
+        if cidade in metragens:
+            probabilidade = min(100, (metragens[cidade] / dados['max_metragem']) * 100)
+            cobertura[cidade] = probabilidade
+        else:
+            cobertura[cidade] = 0  # Se não houver metragem para a cidade
+    return cobertura
+
+# Dados de exemplo
+metragens = {
+    'Cidade1': 1500,
+    'Cidade2': 2500,
+    'Cidade3': 1000
 }
 
-fatores_frequencia = {
-    "2.4 GHz": 1.2,
-    "5 GHz": 0.8
+dados_telecom = {
+    'Cidade1': {'max_metragem': 2000},
+    'Cidade2': {'max_metragem': 3000},
+    'Cidade3': {'max_metragem': 1500}
 }
 
-fatores_roteador = {
-    1: 0.8,
-    2: 1.1,
-    3: 1.3
-}
+# Calculando a cobertura
+cobertura = calcular_cobertura(metragens, dados_telecom)
 
-def calcular_probabilidade(tipo_parede, frequencia_roteador, num_roteadores):
-    fator_parede = fatores_parede.get(tipo_parede, 1)
-    fator_frequencia = fatores_frequencia.get(frequencia_roteador, 1)
-    fator_roteador = fatores_roteador.get(num_roteadores, 1)
-    
-    cobertura_estimativa = 50
-    cobertura_ajustada = cobertura_estimativa * fator_parede * fator_frequencia * fator_roteador
-    probabilidade_cobertura_boa = min(cobertura_ajustada / 100, 1)
-    
-    return probabilidade_cobertura_boa
-
-def main():
-    st.title("Analisador de Cobertura Wi-Fi")
-
-    tipo_parede = st.selectbox("Tipo de Parede", ["drywall", "concreto", "tijolo", "vidro"])
-    frequencia_roteador = st.selectbox("Frequência do Roteador", ["2.4 GHz", "5 GHz"])
-    num_roteadores = st.slider("Número de Roteadores", min_value=1, max_value=3)
-
-    if st.button("Calcular Cobertura"):
-        probabilidade = calcular_probabilidade(tipo_parede, frequencia_roteador, num_roteadores)
-        st.write(f"Probabilidade de Cobertura Boa: {probabilidade:.2%}")
-
-if __name__ == "__main__":
-    main()
+# Exibindo os resultados
+for cidade, probabilidade in cobertura.items():
+    print(f'Cobertura de internet em {cidade}: {probabilidade:.2f}%')
