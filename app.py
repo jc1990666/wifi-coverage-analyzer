@@ -2,10 +2,12 @@ import streamlit as st
 import numpy as np
 import matplotlib.pyplot as plt
 from shapely.geometry import Polygon
+from shapely import affinity
+from io import BytesIO
 
 # Função para importar e desenhar a planta baixa
-def importar_planta_baixa(arquivo):
-    # Simulação de uma planta baixa; substitua com código para ler o arquivo real
+def importar_planta_baixa():
+    # Simulação de uma planta baixa; substitua com código para processar o arquivo real
     return Polygon([(0, 0), (10, 0), (10, 10), (0, 10)])
 
 def desenhar_planta_baixa(planta_baixa):
@@ -36,9 +38,12 @@ st.title('Simulador de Cobertura Wi-Fi')
 uploaded_file = st.file_uploader("Escolha a planta baixa", type=["pdf", "dwg", "dxf"])
 
 if uploaded_file is not None:
-    planta_baixa = importar_planta_baixa(uploaded_file)
+    st.write("Carregando planta baixa...")
+    planta_baixa = importar_planta_baixa()
     desenhar_planta_baixa(planta_baixa)
     
     parametros = {'sigma': 1.0}  # Parâmetro de exemplo para a simulação
     X, Y, Z = simular_cobertura(planta_baixa, parametros)
     visualizar_cobertura(X, Y, Z)
+else:
+    st.write("Nenhum arquivo carregado. Por favor, carregue a planta baixa do edifício.")
